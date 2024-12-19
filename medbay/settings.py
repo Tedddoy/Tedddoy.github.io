@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'system.apps.SystemConfig',
     'widget_tweaks',
-    "channels",
 ]
 
 MIDDLEWARE = [
