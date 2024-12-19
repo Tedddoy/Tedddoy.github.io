@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard UI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'educator_profile.css' %}">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar bg-white border-end p-3">
+            <div class="logo mb-4 fs-4 fw-bold">MedBay</div>
+            <nav>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'educator' user.id %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-user me-2"></i> Profile</a></li>
+                    <li><a href="{% url 'educator_profile' %}" class="d-flex align-items-center mb-3 text-dark active"><i class="fas fa-book me-2"></i> Assigned Class</a></li>
+                </ul>
+            </nav>
+            <div class="profile text-center mt-auto">
+                <img src="{% if user.profile_picture %} {{ user.profile_picture.url }} {% else %} {% static 'images/default-profile.png' %} {% endif %}" class="rounded-circle mb-2" alt="Profile Picture">
+                <p class="mb-0 fw-bold">{{ user.first_name|capfirst }} {{ user.last_name|capfirst }}</p>
+                <span class="text-muted">{{ user.educator.subject }}</span>
+                <a href="{% url 'logout' %}" class="d-block mt-2 text-danger"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+            </div>
+        </div>
+	</div>
+        
+        <!-- Main Content -->
+        <div class="main-content flex-grow-1 p-4">
+            <header class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h4">{{ class_info.service.name }}</h1>
+                    <ul class="breadcrumb">
+                        <li>{{ class_info.day }} {{ class_info.time_start }} - {{ class_info.time_end }}</li>
+                        <li><i class='bx bx-chevron-right'></i></li>
+                    </ul>
+					<a href="{% url 'educator_profile' %}"><span class="text-muted">Back</span></a>
+                </div>
+                <div class="header-profile d-flex align-items-center">
+                    <img src="{% if user.profile_picture %} {{ user.profile_picture.url }} {% else %} {% static 'images/default-profile.png' %} {% endif %}" class="rounded-circle me-2" alt="Profile">
+                    <span>{{ user.username|capfirst }}</span>
+                </div>
+            </header>
+
+            <!-- Add Resource Button -->
+            <div class="mb-4">
+				<button id="addResourceBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addResourceModal">
+					Add Resource
+				</button>
+			</div>
+
+            <!-- Add Resource Modal -->
+			<div id="addResourceModal" class="modal fade" tabindex="-1" aria-labelledby="addResourceModalLabel" aria-hidden="true">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="addResourceModalLabel">Add a Resource</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div class="modal-body">
+							<form method="post" enctype="multipart/form-data" action="{% url 'educator_classes' class_info.id %}">
+								{% csrf_token %}
+								<div class="mb-3">
+									<label for="resource_name" class="form-label">Resource Name:</label>
+									<input type="text" id="resource_name" name="resource_name" class="form-control" required>
+								</div>
+								<div class="mb-3">
+									<label for="resource_type" class="form-label">Resource Type:</label>
+									<select id="resource_type" name="resource_type" class="form-select" required onchange="toggleResourceInputs()">
+										<option value="text">Text</option>
+										<option value="image">Image</option>
+										<option value="file">File</option>
+									</select>
+								</div>
+								<div class="mb-3" id="fileInputContainer" style="display: none;">
+									<label for="file" class="form-label">File:</label>
+									<input type="file" id="file" name="file" class="form-control">
+								</div>
+								<div class="mb-3" id="descriptionInputContainer">
+									<label for="description" class="form-label">Description:</label>
+									<textarea id="description" name="description" class="form-control"></textarea>
+								</div>
+								<div class="form-check">
+									<input type="checkbox" id="availability" name="availability" class="form-check-input" checked>
+									<label for="availability" class="form-check-label">Available</label>
+								</div>
+								<div class="mt-3">
+									<button type="submit" class="btn btn-success">Add Resource</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+
+            <!-- Resources List -->
+			<div class="resources-container">
+				<h2 class="h5 mb-4">Resources</h2>
+				<div class="resources-list">
+					{% for resource in resources %}
+						<div class="resource-item border p-3 rounded mb-3">
+							<div class="resource-header d-flex justify-content-between">
+								<strong>{{ resource.resource_name }}</strong>
+								<span>({{ resource.resource_type }})</span>
+							</div>
+							<div class="resource-content">
+								<p>{{ resource.description }}</p>
+								{% if resource.resource_type == "image" and resource.file %}
+									<a href="#" onclick="viewImage('{{ resource.file.url }}')" class="btn btn-outline-primary btn-sm">View Image</a>
+								{% elif resource.resource_type == "file" and resource.file %}
+									<a href="{{ resource.file.url }}" download class="btn btn-outline-primary btn-sm">Download</a>
+								{% endif %}
+							</div>
+						</div>
+					{% empty %}
+						<p class="text-muted">No resources available.</p>
+					{% endfor %}
+				</div>
+			</div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		// JavaScript for toggling input fields based on resource type selection
+		function toggleResourceInputs() {
+			const resourceType = document.getElementById("resource_type").value;
+			const fileInputContainer = document.getElementById("fileInputContainer");
+			const descriptionInputContainer = document.getElementById("descriptionInputContainer");
+
+			if (resourceType === "text") {
+				fileInputContainer.style.display = "none";
+				descriptionInputContainer.style.display = "block";
+			} else {
+				fileInputContainer.style.display = "block";
+				descriptionInputContainer.style.display = "none";
+			}
+		}
+
+		// JavaScript for opening image in new window
+		function viewImage(imageUrl) {
+			window.open(imageUrl, '_blank').focus();
+		}
+	</script>
+	
+</body>
+</html>

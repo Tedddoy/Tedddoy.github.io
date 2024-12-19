@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard UI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css">
+    <link rel="stylesheet" href="{% static 'customers.css' %}">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar bg-white border-end p-3">
+            <div class="logo mb-4 fs-4 fw-bold">MedBay</div>
+            <nav>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'customer' user.id %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-user me-2"></i> Profile</a></li>
+                    <li><a href="{% url 'customer_appointment' user.id %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-calendar-check me-2"></i> Appointment</a></li>
+                    <li><a href="{% url 'customer_therapy' user.id %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-heart me-2"></i> Therapy Sessions</a></li>
+                    <li><a href="{% url 'enrollment' user.id %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-edit me-2"></i> Enrollment</a></li>
+                    <li><a href="{% url 'customer_class' user.id %}" class="d-flex align-items-center mb-3 text-dark active"><i class="fas fa-graduation-cap me-2"></i> Classes</a></li>
+                    <li><a href="{% url 'team_list' %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-users me-2"></i> Team</a></li>
+                </ul>
+            </nav>
+            <div class="profile text-center mt-auto">
+                <img src="{% if user.profile_picture %} {{ user.profile_picture.url }} {% else %} {% static 'default_profile_picture.png' %} {% endif %}" class="rounded-circle mb-2" alt="Profile Picture">
+                <p class="mb-0 fw-bold">{{ user.first_name|capfirst }} {{ user.last_name|capfirst }}</p>
+                <span class="text-muted">{{ user.educator.subject }}</span>
+                <a href="{% url 'logout' %}" class="d-block mt-2 text-danger"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+            </div>
+        </div>
+    </div>
+
+        <!-- Main Content -->
+        <div class="main-content flex-grow-1 p-4">
+            <header class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h4">Class Resources</h1>
+                    <p class="text-muted">14th Aug 2023</p>
+                </div>
+                <div class="header-profile d-flex align-items-center">
+                    <img src="{% if user.profile_picture %} {{ user.profile_picture.url }} {% else %} {% static 'default_profile_picture.png' %} {% endif %}" class="rounded-circle me-2" alt="Profile">
+                    <span>{{ user.username|capfirst }}</span>
+                </div>
+            </header>
+
+            <section>
+                <div class="resource-container">
+                    {% for resource in resources %}
+                    <div class="resource-card">
+                        <div class="resource-header">
+                            {% if resource.educator.user.profile_picture %}
+                                <img src="{{ resource.educator.user.profile_picture.url }}" alt="Educator Profile Picture">
+                            {% else %}
+                                <img src="{% static 'images/default-profile.png' %}" alt="Default Profile Picture">
+                            {% endif %}
+                            <div class="info">
+                                <h3>{{ resource.resource_name }}</h3>
+                                <p>Uploaded by {{ resource.educator.user.first_name }} {{ resource.educator.user.last_name }}</p>
+                            </div>
+                        </div>
+                        <div class="resource-content">
+                            <p>{{ resource.description }}</p>
+                            {% if resource.file %}
+                                <a href="{{ resource.file.url }}" download>Download</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p>No resources available for this class.</p>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

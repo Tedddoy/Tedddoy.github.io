@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <label for="">Educator: </label>
+    <select id="type">
+        <option value="item0">--Select an Item--</option>
+        <option value="item1">item1</option>
+        <option value="item2">item2</option>
+        <option value="item3">item3</option>
+    </select>
+    
+    <label for="">Service: </label>
+    <select id="size">
+        <option value="">-- select one -- </option>
+    </select>  
+    
+    <script>
+        $(document).ready(function () {
+            $("#type").change(function () {
+                var val = $(this).val();
+                var subject = '';
+                if (val == "item1") {
+                    subject = 'Subject1';
+                } else if (val == "item2") {
+                    subject = 'Subject2';
+                } else if (val == "item3") {
+                    subject = 'Subject3';
+                } 
+                else if (val == "item0") {
+                    $("#size").html("<option value=''>--select one--</option>");
+                    return;
+                }
+                $.ajax({
+                    url: '/get_services_by_subject/', // Replace with the actual URL of your view
+                    data: {
+                        subject: subject
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        var options = '<option value="">--select one--</option>';
+                        for (var i = 0; i < data.length; i++) {
+                            options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
+                        }
+                        $("#size").html(options);
+                    }
+                });
+            });
+        });
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,107 @@
+{% load static %}
+<div class="sidebar bg-white border-end p-3">
+    <div class="logo mb-4 fs-4 fw-bold">MedBay</div>
+    <nav>
+        <ul class="list-unstyled">
+            <li>
+                <a href="{% url 'adminpage' %}" 
+                   class="d-flex align-items-center mb-3 text-dark {% if request.resolver_match.url_name == 'adminpage' %}active{% endif %}">
+                    <i class="fas fa-home me-2"></i> Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'admin_services' %}" 
+                   class="d-flex align-items-center mb-3 text-dark {% if request.resolver_match.url_name == 'admin_services' %}active{% endif %}">
+                    <i class="fas fa-chart-line me-2"></i> Services                  
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'enrollment-list' %}" 
+                   class="d-flex align-items-center mb-3 text-dark {% if request.resolver_match.url_name == 'enrollment-list' %}active{% endif %}">
+                    <i class="fas fa-user-graduate me-2"></i> Enrollments
+                    {% if pending_enrollments_count > 0 %}
+                    <span class="badge bg-danger ms-2">{{ pending_enrollments_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'admin_schedule' %}" 
+                   class="d-flex align-items-center mb-3 text-dark {% if request.resolver_match.url_name == 'admin_schedule' %}active{% endif %}">
+                    <i class="fas fa-chalkboard-teacher me-2"></i> Classes
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'admin_appointments' %}" 
+                   class="d-flex align-items-center mb-3 text-dark {% if request.resolver_match.url_name == 'admin_appointments' %}active{% endif %}">
+                    <i class="fas fa-clipboard-list me-2"></i> Appointments
+                    {% if pending_appointments_count > 0 %}
+                    <span class="badge bg-danger ms-2">{{ pending_appointments_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'admin_payments' %}" 
+                   class="d-flex align-items-center mb-3 text-dark {% if request.resolver_match.url_name == 'admin_payments' %}active{% endif %}">
+                    <i class="fas fa-wallet me-2"></i> Payment
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'user_list' %}" 
+                   class="d-flex align-items-center mb-3 text-dark {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
+                    <i class="fas fa-users me-2"></i> Users
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'admin_chatbox' %}" 
+                   class="d-flex align-items-center mb-3 text-dark {% if request.resolver_match.url_name == 'admin_chatbox' %}active{% endif %}">
+                    <i class="fas fa-users me-2"></i> Chatbox
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <a href="{% url 'logout' %}" class="d-block mt-2 text-danger">
+        <i class="fas fa-sign-out-alt"></i> Log Out
+    </a>
+</div>
+
+<script>
+    function fetchPendingCounts() {
+        // Fetch both pending appointments and enrollments counts
+        Promise.all([
+            fetch("{% url 'pending_appointments_count' %}").then(response => response.json()),
+            fetch("{% url 'pending_enrollments_count' %}").then(response => response.json())
+        ])
+        .then(([appointmentsData, enrollmentsData]) => {
+            // Update appointments badge
+            const appointmentBadge = document.querySelector('#appointmentBadge');
+            if (appointmentBadge) {
+                appointmentBadge.textContent = appointmentsData.pending_appointments_count;
+                appointmentBadge.style.display = appointmentsData.pending_appointments_count > 0 ? 'inline' : 'none';
+            }
+
+            // Update enrollments badge
+            const enrollmentBadge = document.querySelector('#enrollmentBadge');
+            if (enrollmentBadge) {
+                enrollmentBadge.textContent = enrollmentsData.pending_enrollments_count;
+                enrollmentBadge.style.display = enrollmentsData.pending_enrollments_count > 0 ? 'inline' : 'none';
+            }
+        })
+        .catch(error => console.error('Error fetching pending counts:', error));
+    }
+
+    // Poll every 2 seconds
+    setInterval(fetchPendingCounts, 2000);
+</script>
+
+
+
+
+<style>
+    .badge {
+font-size: 0.75rem;
+padding: 0.25em 0.5em;
+border-radius: 0.5rem;
+color: #fff;
+background-color: #dc3545; /* Bootstrap's danger color */
+}
+</style>

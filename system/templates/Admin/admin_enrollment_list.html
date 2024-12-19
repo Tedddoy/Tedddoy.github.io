@@ -1,0 +1,206 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Services</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'admin_enrollment.css' %}">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        {% include 'Admin/admin_sidebar.html' %}
+    </div>
+        
+        <!-- Main Content -->
+        <div class="main-content flex-grow-1 p-4">
+            <header class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h4">Enrollment</h1>
+                </div>
+            </header>
+                     
+            <!-- Data Table -->
+            <section class="row g-3">
+                <div class="col-md-8">
+                    <div class="table-card p-4 shadow-sm rounded">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="m-0">All Enrollment</h3>
+                            <div class="input-group w-50">
+                                <input type="text" id="search-input" class="form-control" placeholder="Search for services" aria-label="Search for services">
+                            </div>
+                        </div>
+                        <div class="table-container" style="overflow-y: auto; max-height: 420px;">
+                            <table class="table" id="recentBookingsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        
+                                        <th>Client</th>
+                                        <th>Name</th>
+                                        <th>Service</th>
+                                        <th>Schedule</th>
+                                        <th>Enrollment Date</th>
+                                        <th>Reference No.</th>
+                                        <th>Status</th>
+                                        <th>Update</th>
+                                        <th>Remove</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for enrollment in enrollments %}
+                                        <tr>
+                                            
+                                            <td>{{ enrollment.client.username }}</td>
+                                            <td>{{ enrollment.client.first_name }} {{ enrollment.client.last_name }}</td>
+                                            <td>{{ enrollment.schedule.service.name }}</td>
+                                            <td>{{ enrollment.schedule.day }} : {{ enrollment.schedule.time_start }} - {{ enrollment.schedule.time_end }}</td>
+                                            <td>{{ enrollment.enrollment_date }}</td>
+                                            <td>
+                                                {% if enrollment.payment_set.exists %}
+                                                <a href="#" 
+                                                   class="reference-link" 
+                                                   data-bs-toggle="modal" 
+                                                   data-bs-target="#paymentModal" 
+                                                   data-client-username="{{ enrollment.client.username }}"
+                                                   data-client-fullname="{{ enrollment.client.first_name }} {{ enrollment.client.last_name }}"
+                                                   data-service="{{ enrollment.schedule.service.name }}"
+                                                   data-schedule="{{ enrollment.schedule.day }}: {{ enrollment.schedule.time_start }} - {{ enrollment.schedule.time_end }}"
+                                                   data-amount="{{ enrollment.payment_set.last.amount }}"
+                                                   data-reference="{{ enrollment.payment_set.last.reference_number }}"
+                                                   data-receipt="{{ enrollment.payment_set.last.receipt.url }}">
+                                                    {{ enrollment.payment_set.last.reference_number }}
+                                                </a>
+                                                {% else %}
+                                                No Payment
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if enrollment.status == 'Enrolled' %}bg-success
+                                                    {% elif enrollment.status == 'Pending' %}bg-warning text-dark
+                                                    {% elif enrollment.status == 'Declined' %}bg-danger
+                                                    {% elif enrollment.status == 'Confirmed' %}bg-info text-dark
+                                                    {% endif %}">
+                                                    {{ enrollment.status }}
+                                                </span>
+                                            </td>
+                                        
+                                            <td class="text-center">
+                                                <!-- Status Update Form -->
+                                                <form method="post" style="display: flex; align-items: center; gap: 10px;">
+                                                    {% csrf_token %}
+                                                    <div class="status-dropdown">
+                                                        <select name="status" class="form-select form-select-sm">
+                                                            <option value="Enrolled" {% if enrollment.status == "Enrolled" %}selected{% endif %}>Enrolled</option>
+                                                            <option value="Pending" {% if enrollment.status == "Pending" %}selected{% endif %}>Pending</option>
+                                                            <option value="Declined" {% if enrollment.status == "Declined" %}selected{% endif %}>Declined</option>
+                                                        </select>
+                                                    </div>
+                                                    <input type="hidden" name="enrollment_id" value="{{ enrollment.id }}">
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Update Status">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                            <td>
+                                                <!-- Delete Form -->
+                                                <form method="post" action="{% url 'delete_enrollment' enrollment.id %}" style="display:inline; margin-left: 5px;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this enrollment?');" title="Delete Enrollment">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="7">No enrollments available.</td>
+                                        </tr>  
+                                        {% endfor %}    
+                                </tbody>
+                            </table>
+
+                            <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="paymentModalLabel">Payment Details</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p><strong>Client Username:</strong> <span id="modalClientUsername"></span></p>
+                                            <p><strong>Client Full Name:</strong> <span id="modalClientFullName"></span></p>
+                                            <p><strong>Service:</strong> <span id="modalService"></span></p>
+                                            <p><strong>Schedule:</strong> <span id="modalSchedule"></span></p>
+                                            <p><strong>Amount:</strong> <span id="modalAmount"></span></p>
+                                            <p><strong>Reference Number:</strong> <span id="modalReference"></span></p>
+                                            <p><strong>Receipt:</strong></p>
+                                            <img id="modalReceipt" src="" alt="Receipt Image" class="img-fluid border" style="max-width: 100%; max-height: 200px; display: none;">
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    document.getElementById('search-input').addEventListener('input', function () {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#recentBookingsTable tbody tr');
+
+        rows.forEach(row => {
+            const client = row.children[0]?.textContent.toLowerCase(); // Client column
+            const educator = row.children[1]?.textContent.toLowerCase(); // Educator column
+            const service = row.children[2]?.textContent.toLowerCase(); // Service column
+
+            const isMatch = client.includes(filter) || educator.includes(filter) || service.includes(filter);
+            row.style.display = isMatch ? '' : 'none';
+        });
+    });
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+    const paymentModal = document.getElementById('paymentModal');
+    const modalClientUsername = document.getElementById('modalClientUsername');
+    const modalClientFullName = document.getElementById('modalClientFullName');
+    const modalService = document.getElementById('modalService');
+    const modalSchedule = document.getElementById('modalSchedule');
+    const modalAmount = document.getElementById('modalAmount');
+    const modalReference = document.getElementById('modalReference');
+    const modalReceipt = document.getElementById('modalReceipt');
+
+    document.querySelectorAll('.reference-link').forEach(link => {
+        link.addEventListener('click', function () {
+            modalClientUsername.textContent = this.dataset.clientUsername || 'N/A';
+            modalClientFullName.textContent = this.dataset.clientFullname || 'N/A';
+            modalService.textContent = this.dataset.service || 'N/A';
+            modalSchedule.textContent = this.dataset.schedule || 'N/A';
+            modalAmount.textContent = this.dataset.amount ? `₱${parseFloat(this.dataset.amount).toFixed(2)}` : 'N/A';
+            modalReference.textContent = this.dataset.reference || 'N/A';
+
+            const receiptUrl = this.dataset.receipt;
+            if (receiptUrl) {
+                modalReceipt.src = receiptUrl;
+                modalReceipt.style.display = 'block';
+            } else {
+                modalReceipt.style.display = 'none';
+            }
+        });
+    });
+});
+    </script>   
+    
+</body>
+</html>

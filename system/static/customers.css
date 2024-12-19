@@ -1,0 +1,424 @@
+/* Global Styles */
+body {
+    background-color: #f7f8fa;
+    font-family: 'Montserrat', sans-serif;
+    display: flex;
+    overflow-x: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 200px; /* Reduced width for better fit */
+    flex-shrink: 0; /* Prevent the sidebar from shrinking */
+    background-color: #fff;
+    border-right: 1px solid #e5e5e5;
+    padding: 20px;
+    height: 100vh;
+    position: fixed; /* Sidebar stays fixed while scrolling */
+}
+
+.sidebar .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar nav ul li a {
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    align-items: center;
+    padding: 10px 5px;
+    border-radius: 5px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar nav ul li a i {
+    margin-right: 10px;
+}
+
+.sidebar nav ul li a.active,
+.sidebar nav ul li a:hover {
+    background-color: #A7D477;
+    color: #fff;
+}
+
+.sidebar .profile {
+    margin-top: auto;
+    text-align: center;
+}
+
+.sidebar .profile img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.sidebar .logout {
+    display: block;
+    margin-top: 10px;
+    text-decoration: none;
+    color: red;
+    font-weight: bold;
+}
+
+.sidebar .logout:hover {
+    color: darkred;
+}
+
+/* Main Content */
+.main-content {
+    margin-left: 200px; /* Adjusted to match the sidebar width */
+    padding: 20px;
+    background-color: #f7f8fa;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 1.8rem;
+    color: #333;
+}
+
+.header-profile img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.card {
+    border: none;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.leftarea {
+    height: 91vh;
+    width: 80%;
+    display: flex;
+}
+
+.boxes {
+    height: 300px;
+    width: 300px;
+    border: solid 0.6px rgb(218, 220, 224);
+    display: flex;
+    flex-direction: column;
+    margin: 25px;
+    border-radius: 15px;
+}
+
+.topofbox {
+    height: 100px;
+    width: 300px;
+    background-color: green;
+    text-align: start;
+    border-top-right-radius: 15px;
+    border-top-left-radius: 15px;
+    position: relative;
+}
+
+.topofbox h1 {
+    font-size: larger;
+    color: white;
+    padding-left: 20px;
+}
+
+.topofbox p {
+    font-size: small;
+    margin-top: -5px;
+    color: white;
+    padding-left: 20px;
+}
+
+.centerofbox {
+    height: 137px;
+    width: 300px;
+    position: relative;
+}
+
+.boximg {
+    height: 75px;
+    width: 75px;
+    position: absolute;
+    border-radius: 50%;
+    right: 15px;
+    top: -35px;
+}
+
+.bottomofbox {
+    height: 57px;
+    width: 300px;
+    position: relative;
+    border-top: solid 0.6px rgb(218, 220, 224);
+}
+
+#profile {
+    position: absolute;
+    right: 60px;
+    top: 20px;
+	color: #000;
+}
+
+#folder {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+	color: #000;
+}
+
+#dots {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    color: white;
+}
+
+.boximg:hover {
+    margin: -5px;
+    background-color: #3c40432b;
+    padding: 5px;
+}
+
+#studentList p {
+    margin: 5px 0;
+    padding: 5px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+#studentList p:hover {
+    background-color: #e9ecef;
+}
+
+a{
+    text-decoration: none;
+}
+
+#calendar {
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #f7f8fa;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    min-height: 500px; /* Adjust minimum height */
+}
+.calendar-header {
+    background-color: #343a40;
+    color: #f7f8fa;
+    padding: 10px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+.calendar-body {
+    padding: 15px;
+    background-color: #343a40;
+}
+
+.legend-card {
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+}
+.status-indicator {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+    margin-right: 10px;
+}
+.status-indicator.confirmed {
+    background-color: #378006; /* Green for confirmed */
+}
+.status-indicator.pending {
+    background-color: #FFCC00; /* Yellow for pending */
+}
+.modal-content {
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.fc-disabled-sunday {
+    background-color: #f8d7da; /* Light red background */
+    color: #721c24; /* Red text */
+    pointer-events: none; /* Disable clicking */
+}
+
+/* Custom Scrollbar for Calendar */
+#calendar .fc-scroller {
+    overflow-y: auto;
+}
+
+#calendar .fc-scroller::-webkit-scrollbar {
+    width: 10px; /* Width of the scrollbar */
+}
+
+#calendar .fc-scroller::-webkit-scrollbar-thumb {
+    background: #888; /* Color of the scrollbar thumb */
+    border-radius: 5px; /* Rounded edges */
+}
+
+#calendar .fc-scroller::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Darker color on hover */
+}
+
+#calendar .fc-scroller::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Background color of the scrollbar track */
+}
+
+.resource-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center; /* Center align cards */
+}
+
+.resource-card {
+    width: 100%; /* Fixed width for each card */
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.resource-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.resource-header img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+}
+
+.resource-header .info h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #343a40;
+    word-wrap: break-word; /* Ensure long names wrap within the card */
+}
+
+.resource-header .info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.resource-content {
+    margin-top: 10px;
+    font-size: 0.95rem;
+    color: #495057;
+}
+
+.resource-content p {
+    margin-bottom: 10px;
+    word-wrap: break-word; /* Ensure descriptions wrap properly */
+}
+
+.resource-content a {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+}
+
+.resource-content a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 992px) {
+    .sidebar {
+        width: 100%; /* Make sidebar full-width on smaller screens */
+        height: auto; /* Allow sidebar to adapt its height */
+        position: relative; /* Position sidebar relative on small screens */
+    }
+
+    .main-content {
+        margin-left: 0; /* Remove left margin for full width */
+    }
+}
+
+@media (max-width: 768px) {
+    .header-profile {
+        flex-direction: column; /* Stack profile image and name vertically */
+        align-items: center;
+        text-align: center;
+    }
+    
+}
+
+
+.chatbox-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 500px;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+}
+.chatbox-header {
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+}
+.chatbox-body {
+    display: none;
+    flex-grow: 1;
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 10px;
+    background-color: #f9f9f9;
+    max-height: 300px; /* Set the maximum height for the chatbox */
+    border-bottom: 1px solid #ddd; /* Optional: Add a border for separation */
+}
+.chatbox-footer {
+    display: none;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    background-color: #f1f1f1;
+}
+.chat-message {
+    margin-bottom: 10px;
+}
+.chat-message.sent {
+    text-align: right;
+    color: #007bff;
+}
+.chat-message.received {
+    text-align: left;
+    color: #dc3545;
+}
+.chatbox-open .chatbox-body,
+.chatbox-open .chatbox-footer {
+    display: block;
+}

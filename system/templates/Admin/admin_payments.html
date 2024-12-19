@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Services</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'admin_enrollment.css' %}">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        {% include 'Admin/admin_sidebar.html' %}
+    </div>
+        
+        <!-- Main Content -->
+        <div class="main-content flex-grow-1 p-4">
+            <header class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h4">Payments</h1>
+                </div>
+            </header>
+                     
+            <!-- Data Table -->
+            <section class="row g-3">
+                <div class="col-md-8">
+                    <div class="table-card2 p-4 shadow-sm rounded">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="m-0">All Payments</h3>
+                            <div class="input-group w-50">
+                                <input type="text" id="search-input" class="form-control" placeholder="Search for services" aria-label="Search for services">
+                            </div>
+                        </div>
+                        <div class="table-container" style="overflow-y: auto; max-height: 420px;">
+                            <table class="table" id="recentBookingsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Client</th>
+                                        <th>Full Name</th>
+                                        <th>Educator</th>
+                                        <th>Service</th>
+                                        <th>Amount</th>
+                                        <th>Reference Number</th>
+                                        <th>Receipt</th>        
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in payments %}
+                                    <tr>
+                                        <td>{{ payment.enrollment.client.username }}</td>
+                                        <td>{{ payment.enrollment.client.first_name }} {{ payment.enrollment.client.last_name }}</td>
+                                        <td>{{ payment.enrollment.educator.user.username }}</td>
+                                        <td>{{ payment.enrollment.schedule.service.name }}</td>
+                                        <td>{{ payment.amount }} Php</td>
+                                        <td>{{ payment.reference_number }}</td>
+                                        <td>
+                                            {% if payment.receipt %}
+                                            <a href="{{ payment.receipt.url }}" target="_blank">View Receipt</a>
+                                            {% else %}
+                                            No Receipt
+                                            {% endif %}
+                                        </td>
+                                        
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="8">No payments found.</td>
+                                    </tr>
+                                    {% endfor %}   
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    document.getElementById('search-input').addEventListener('input', function () {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#recentBookingsTable tbody tr');
+
+        rows.forEach(row => {
+            const client = row.children[0]?.textContent.toLowerCase(); // Client column
+            const educator = row.children[1]?.textContent.toLowerCase(); // Educator column
+            const service = row.children[2]?.textContent.toLowerCase(); // Service column
+
+            const isMatch = client.includes(filter) || educator.includes(filter) || service.includes(filter);
+            row.style.display = isMatch ? '' : 'none';
+        });
+    });
+    </script>   
+    
+</body>
+</html>

@@ -1,0 +1,179 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Therapist Appointments</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'therapist.css' %}">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar bg-white border-end p-3">
+            <div class="logo mb-4 fs-4 fw-bold">MedBay</div>
+            <nav>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'therapist_profile' %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-user me-2"></i> Profile</a></li>
+                    <li><a href="{% url 'therapist_appointments' %}" class="d-flex align-items-center mb-3 text-dark active"><i class="fas fa-calendar-check me-2"></i> Appointments</a></li>
+                    <li><a href="{% url 'therapist_progress' %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-tasks me-2"></i> Progress</a></li>
+                </ul>
+            </nav>
+            <div class="profile text-center mt-auto">
+                <img src="{% if user.profile_picture %} {{ user.profile_picture.url }} {% else %} {% static 'images/default-profile.png' %} {% endif %}" class="rounded-circle mb-2" alt="Profile Picture">
+                <p class="mb-0 fw-bold">{{ user.first_name|capfirst }} {{ user.last_name|capfirst }}</p>
+                <span class="text-muted">{{ user.specialization }}</span>
+                <a href="{% url 'logout' %}" class="d-block mt-2 text-danger"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+            </div>
+        </div>
+    </div>
+        
+    <!-- Main Content -->
+    <div class="main-content flex-grow-1 p-4">
+        <header class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h4">All Appointments</h1>
+            </div>
+            <div class="header-profile d-flex align-items-center">
+                <img src="{% if user.profile_picture %} {{ user.profile_picture.url }} {% else %} {% static 'images/default-profile.png' %} {% endif %}" class="rounded-circle me-2" alt="Profile">
+                <span>{{ user.username|capfirst }}</span>
+            </div>
+        </header>
+
+        <!-- Combined Appointments Table -->
+        <section>
+            {% if appointments %}
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Client</th>
+                            <th>Service</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Type</th>
+                            <th>Progress</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in appointments %}
+                            <tr>
+                                <td>{{ appointment.user.first_name }} {{ appointment.user.last_name }}</td>
+                                <td>{{ appointment.service.name }}</td>
+                                <td>{{ appointment.appointment_date|date:"M d, Y" }}</td>
+                                <td>{{ appointment.appointment_time|date:"g:i A" }}</td>
+                                <td>{{ appointment.appointment_type }}</td>
+                                <td>
+                                    <form method="post" action="{% url 'update_appointment_level' appointment.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <select name="level" class="form-select form-select-sm d-inline w-auto">
+                                            <option value="0" {% if appointment.level == 0 %}selected{% endif %}>Level 0 - 0%</option>
+                                            <option value="1" {% if appointment.level == 1 %}selected{% endif %}>Level 1 - 25%</option>
+                                            <option value="2" {% if appointment.level == 2 %}selected{% endif %}>Level 2 - 50%</option>
+                                            <option value="3" {% if appointment.level == 3 %}selected{% endif %}>Level 3 - 75%</option>
+                                            <option value="4" {% if appointment.level == 4 %}selected{% endif %}>Level 4 - 100%</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-success">Update</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar"
+                                             style="width: {{ appointment.get_progress }}%;"
+                                             aria-valuenow="{{ appointment.get_progress }}"
+                                             aria-valuemin="0" aria-valuemax="100">
+                                            {{ appointment.get_progress }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#progressModal-{{ appointment.id }}">Add Progress Notes</button>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detailsModal-{{ appointment.id }}">View Details</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% for appointment in appointments %}
+                <div class="modal fade" id="progressModal-{{ appointment.id }}" tabindex="-1" aria-labelledby="progressModalLabel-{{ appointment.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="progressModalLabel-{{ appointment.id }}">Add Progress for {{ appointment.service.name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form method="post" action="{% url 'add_progress' appointment.id %}">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="progressDetails-{{ appointment.id }}" class="form-label">Progress Details</label>
+                                        <textarea class="form-control" id="progressDetails-{{ appointment.id }}" name="progress_details" rows="3" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="progressNotes-{{ appointment.id }}" class="form-label">Progress Notes</label>
+                                        <textarea class="form-control" id="progressNotes-{{ appointment.id }}" name="notes" rows="3" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="progressOutcome-{{ appointment.id }}" class="form-label">Outcome</label>
+                                        <textarea class="form-control" id="progressOutcome-{{ appointment.id }}" name="outcome" rows="3" required></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-success">Submit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+{% endfor %}
+
+            {% else %}
+                <p class="text-muted">No appointments found.</p>
+            {% endif %}
+        </section>
+
+        <!-- Details Modal -->
+        {% for appointment in appointments %}
+        <div class="modal fade" id="detailsModal-{{ appointment.id }}" tabindex="-1" aria-labelledby="detailsModalLabel-{{ appointment.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detailsModalLabel-{{ appointment.id }}">Appointment Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Client:</strong> {{ appointment.user.first_name }} {{ appointment.user.last_name }}</p>
+                        <p><strong>Service:</strong> {{ appointment.service.name }}</p>
+                        <p><strong>Date:</strong> {{ appointment.appointment_date|date:"M d, Y" }}</p>
+                        <p><strong>Time:</strong> {{ appointment.appointment_time|date:"g:i A" }}</p>
+                        <h6 class="mt-3">Progress Notes</h6>
+                            {% if appointment.progress_notes %}
+                                <ul class="list-group">
+                                    {% for progress in appointment.progress_notes.all %}
+                                        <li class="list-group-item">
+                                            <p><strong>Date:</strong> {{ progress.report_date|date:"M d, Y" }}</p>
+                                            <p><strong>Progress Details:</strong> {{ progress.progress_details }}</p>
+                                            <p><strong>Notes:</strong> {{ progress.notes }}</p>
+                                            <p><strong>Outcome:</strong> {{ progress.outcome }}</p>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted">No progress entries available.</p>
+                            {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

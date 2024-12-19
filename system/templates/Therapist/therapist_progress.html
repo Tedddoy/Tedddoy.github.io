@@ -1,0 +1,174 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Therapist Progress</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'therapist.css' %}">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar bg-white border-end p-3">
+            <div class="logo mb-4 fs-4 fw-bold">MedBay</div>
+            <nav>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'therapist_profile' %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-user me-2"></i> Profile</a></li>
+                    <li><a href="{% url 'therapist_appointments' %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-calendar-check me-2"></i> Appointment</a></li>
+					<li><a href="{% url 'therapist_progress' %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-tasks me-2"></i> Progress</a></li>
+                </ul>
+            </nav>
+            <div class="profile text-center mt-auto">
+                <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}" class="rounded-circle mb-2" alt="Profile Picture">
+                <p class="mb-0 fw-bold">{{ user.first_name|capfirst }} {{ user.last_name|capfirst }}</p>
+                <span class="text-muted">{{ user.specialization }}</span>
+                <a href="{% url 'logout' %}" class="d-block mt-2 text-danger"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+            </div>
+        </div>
+    </div>
+
+        <!-- Main Content -->
+        <div class="main-content flex-grow-1 p-4">
+            <header class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h4">Customer Progress</h1>
+                    <p class="text-muted">14th Aug 2023</p>
+                </div>
+                <div class="header-profile d-flex align-items-center">
+                    <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}" class="rounded-circle me-2" alt="Profile">
+                    <span>{{ user.username|capfirst }}</span>
+                </div>
+            </header>
+
+            <section>
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Appointments Progress</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Contact</th>
+                                    <th>Address</th>
+                                    <th>Birthday</th>
+                                    <th>Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if customers %}
+                                    {% for customer in customers %}
+                                    <tr>
+                                        <td>
+                                            <img src="{{ customer.profile_picture_url }}" alt="Profile Picture" class="img-fluid rounded-circle me-2" style="width: 40px; height: 40px;">
+                                            {{ customer.username }}
+                                        </td>
+                                        <td>{{ customer.contact_info }}</td>
+                                        <td>{{ customer.address }}</td>
+                                        <td>{{ customer.birthdate }}</td>
+                                        <td>
+                                            <button class="btn btn-primary btn-sm view-progress-btn" data-customer-id="{{ customer.id }}">
+                                                View Progress
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">No customers with finished sessions.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Modal -->
+                <div id="progress-modal" class="modal fade" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="progressModalLabel">Progress Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="progress mb-3">
+                                    <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                        0%
+                                    </div>
+                                </div>
+                                <div id="progress-details" style="max-height: 300px; overflow-y: auto;">
+                                    <p>Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = new bootstrap.Modal(document.getElementById('progress-modal'));
+            const modalContent = document.getElementById('progress-details');
+            const progressBar = document.querySelector('.progress-bar');
+
+            document.querySelectorAll('.view-progress-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const customerId = this.dataset.customerId;
+
+                    // Show loading indicator
+                    modalContent.innerHTML = '<p>Loading...</p>';
+
+                    // Fetch progress details via AJAX
+                    fetch(`/therapist/customer-progress/${customerId}/`)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network response was not ok');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                const entries = data.progress_entries.map(entry => `
+                                    <div>
+                                        <p><strong>Service:</strong> ${entry.service}</p>
+                                        <p><strong>Progress:</strong> ${entry.progress}%</p>
+                                        <p><strong>Notes:</strong> ${entry.notes}</p>
+                                        <p><strong>Outcome:</strong> ${entry.outcome}</p>
+                                        <p><strong>Date:</strong> ${entry.date}</p>
+                                        <hr>
+                                    </div>
+                                `).join('');
+
+                                modalContent.innerHTML = `
+                                    <p><strong>Customer:</strong> ${data.customer_name}</p>
+                                    <p><strong>Total Progress:</strong> ${data.total_progress}%</p>
+                                    <div>${entries}</div>
+                                `;
+
+                                // Update progress bar with the total progress
+                                progressBar.style.width = `${data.total_progress}%`;
+                                progressBar.setAttribute('aria-valuenow', data.total_progress);
+                                progressBar.textContent = `${data.total_progress}%`;
+                            } else {
+                                modalContent.innerHTML = `<p>Error: ${data.message}</p>`;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching data:', error);
+                            modalContent.innerHTML = `<p>Error fetching progress details.</p>`;
+                        });
+
+                    // Show the modal
+                    modal.show();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

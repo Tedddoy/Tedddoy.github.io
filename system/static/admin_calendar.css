@@ -1,0 +1,186 @@
+/* Global Styles */
+body {
+    background-color: #f7f8fa;
+    font-family: 'Montserrat', sans-serif;
+    display: flex;
+    overflow-x: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: #fff;
+    border-right: 1px solid #e5e5e5;
+    padding: 20px;
+    position: fixed;
+    height: 100vh;
+}
+
+.sidebar .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar nav ul li a {
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    align-items: center;
+    padding: 10px 5px;
+    border-radius: 5px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar nav ul li a.active,
+.sidebar nav ul li a:hover {
+    background-color: #A7D477;
+    color: #fff;
+}
+
+.sidebar .logout {
+    margin-top: 20px;
+    text-decoration: none;
+    color: red;
+    font-weight: bold;
+}
+
+.sidebar .logout:hover {
+    color: darkred;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    width: calc(100% - 250px);
+    margin-left: 250px;
+    padding: 20px;
+    background-color: #f7f8fa;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 1.8rem;
+    color: #333;
+}
+
+/* Calendar Section */
+.table-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+    height: auto;
+}
+
+.table-card h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+/* FullCalendar Overrides */
+#calendar {
+    width: 100%;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+.fc-toolbar {
+    margin-bottom: 20px;
+}
+
+.fc-day-header {
+    background-color: #A7D477;
+    color: white;
+    padding: 5px 0;
+}
+
+.fc-event {
+    background-color: #8cc567;
+    border: none;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+/* Buttons */
+.btn-success {
+    background-color: #A7D477;
+    border-color: #A7D477;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #8cc567;
+    border-color: #8cc567;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+}
+
+/* Add Schedule Button */
+.add-plus-btn {
+    background-color: #A7D477;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 1.2rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+}
+
+.add-plus-btn:hover {
+    background-color: #8cc567;
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Modal */
+.modal-dialog {
+    max-width: 500px;
+    margin: auto;
+}
+
+.modal-header {
+    background-color: #A7D477;
+    color: white;
+}
+
+.modal-body .form-label {
+    font-weight: bold;
+    color: #333;
+}
+
+.modal-footer .btn-primary {
+    background-color: #A7D477;
+    border: none;
+}
+
+.modal-footer .btn-primary:hover {
+    background-color: #8cc567;
+}

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Register</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .register-card {
+      width: 100%;
+      max-width: 400px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+    }
+    .register-card h2 {
+      margin-bottom: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .register-card .form-group {
+      margin-bottom: 20px;
+    }
+    .register-card .form-group label {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .register-card .form-control {
+      height: 45px;
+      border-radius: 5px;
+    }
+    .register-card .btn {
+      background-color: #007bff;
+      color: #fff;
+      height: 45px;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .register-card .btn:hover {
+      background-color: #0056b3;
+    }
+    .register-card .text-error {
+      color: red;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+    .register-card .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    .register-card .footer a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    .register-card .footer a:hover {
+      text-decoration: underline;
+    }
+    .register-card .back-home {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #6c757d;
+    }
+    .register-card .back-home a {
+      color: #007bff;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .register-card .back-home a:hover {
+      text-decoration: underline;
+    }
+    .logo {
+      font-family: 'Poppins', sans-serif; /* Use Poppins font */
+      font-size: 24px;
+      font-weight: 750;
+      display: flex;
+      align-items: center;
+      bottom: 800px;
+      position: absolute;
+      
+    }
+
+    .logo-med {
+      color: white;
+      background-color: #00FF00; /* Vibrant green */
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+
+    .logo-bay {
+      color: #002060; /* Dark blue */
+      margin-left: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <span class="logo-med">Med</span><span class="logo-bay">Bay</span>
+  </div>
+  <div class="register-card">
+    <h2>Register</h2>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" name="username" id="id_username" class="form-control">
+    </div>
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" name="email" id="id_email" class="form-control">
+    </div>
+    <div class="form-group">
+        <label for="password1">Password</label>
+        <input type="password" name="password1" id="id_password1" class="form-control">
+    </div>
+    <div class="form-group">
+        <label for="password2">Confirm Password</label>
+        <input type="password" name="password2" id="id_password2" class="form-control">
+    </div>
+      <span class="text-error">{{ form.errors }}</span>
+      <button type="submit" class="btn btn-primary btn-block">Register</button>
+    </form>
+    <div class="footer">
+      <p>Already have an account? <a href="{% url 'login_view' %}">Login here</a></p>
+    </div>
+    <div class="back-home">
+      <a href="{% url 'index' %}">← Back to Home</a>
+    </div>
+  </div>
+</body>
+</html>

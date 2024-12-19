@@ -1,0 +1,250 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Services</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        {% include 'Admin/admin_sidebar.html' %}
+    </div>
+        
+        <!-- Main Content -->
+        <div class="main-content flex-grow-1 p-4">
+            <header class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h4">Chat with people!</h1>
+                </div>
+            </header>
+                     
+            <!-- Data Table -->
+            <section class="row g-3">
+                <div class="container-fluid p-4">
+                    <h1 class="mb-4">Chat with Users</h1>
+                    <div class="row">
+                        <!-- User List -->
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Users</h5>
+                                </div>
+                                <div class="user-list" style="max-height: 400px; overflow-y: auto;">
+                                    <ul class="list-group list-group-flush">
+                                        {% for user in users %}
+                                        <li class="list-group-item user-item" data-user-id="{{ user.id }}">
+                                            <div>
+                                                <p class="fw-bold mb-0">{{ user.username }}</p>
+                                                <small class="text-muted">User</small>
+                                            </div>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+            
+                        <!-- Chat Box -->
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Chat</h5>
+                                </div>
+                                <div id="chatbox-container" class="card-body chatbox-container">
+                                    <div id="chat-messages" class="chat-messages">
+                                        <!-- Chat messages will load here dynamically -->
+                                    </div>
+                                    <form id="chat-form" class="d-flex mt-3">
+                                        {% csrf_token %}
+                                        <input type="hidden" id="receiver-id" value="">
+                                        <input type="text" id="chat-message" class="form-control me-2" placeholder="Type a message">
+                                        <button type="submit" class="btn btn-primary">Send</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+       let lastMessageId = null; // Tracks the latest message ID for incremental loading
+
+// Add event listeners for user list items
+document.querySelectorAll('.user-item').forEach(item => {
+    item.addEventListener('click', function () {
+        const userId = this.getAttribute('data-user-id');
+        document.getElementById('receiver-id').value = userId;
+
+        // Highlight the selected user
+        document.querySelectorAll('.user-item').forEach(user => user.classList.remove('active'));
+        this.classList.add('active');
+
+        // Reset lastMessageId when switching users
+        lastMessageId = null;
+        loadMessages(userId); // Fetch messages for the selected user
+    });
+});
+
+// Function to fetch chat messages incrementally
+const displayedMessageIds = new Set();
+const appendMessage = (message, type) => {
+    const chatMessages = document.getElementById('chat-messages');
+
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('chat-message', type);
+
+    const senderName = document.createElement('div');
+    senderName.classList.add('message-sender-name');
+    senderName.textContent = message.sender__username;
+
+    const messageContent = document.createElement('p');
+    messageContent.textContent = message.message;
+
+    const messageTimestamp = document.createElement('span');
+    messageTimestamp.textContent = message.timestamp;
+
+    messageElement.appendChild(senderName);
+    messageElement.appendChild(messageContent);
+    messageElement.appendChild(messageTimestamp);
+    chatMessages.appendChild(messageElement);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+};
+
+// Function to load messages
+const loadMessages = (userId) => {
+    const url = `/chat/messages/${userId}/?last_message_id=${lastMessageId || ''}`;
+    fetch(url)
+    .then(response => response.json())
+    .then(data => {
+        console.log('Fetched messages:', data); // Add this line to debug
+        data.messages.forEach(message => {
+            if (!displayedMessageIds.has(message.id)) {
+                appendMessage(message, message.sender_is_client ? 'sent' : 'received');
+                displayedMessageIds.add(message.id);
+                lastMessageId = message.id;
+            }
+        });
+    })
+    .catch(error => console.error('Error:', error));
+};
+// Auto-refresh messages for the selected user every 5 seconds
+setInterval(() => {
+    const userId = document.getElementById('receiver-id').value;
+    if (userId) {
+        loadMessages(userId);
+    }
+}, 2000);
+
+// Disable the send button if the message input is empty
+const messageInput = document.getElementById('chat-message');
+const sendButton = document.querySelector('#chat-form button');
+
+messageInput.addEventListener('input', () => {
+    sendButton.disabled = messageInput.value.trim() === '';
+});
+
+// Send chat messages
+document.getElementById('chat-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const receiverId = document.getElementById('receiver-id').value;
+    const message = messageInput.value.trim();
+
+    if (!receiverId || !message) return;
+
+    fetch('/chat/send/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({ receiver_id: receiverId, message: message }),
+    })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to send message');
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Reset input and disable send button
+                messageInput.value = '';
+                sendButton.disabled = true;
+
+                // Let the next `loadMessages` cycle handle the display
+            } else {
+                alert('Failed to send message. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while sending the message. Please try again.');
+        });
+});
+    </script>
+
+<style>
+    .chat-messages {
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+    .chat-message {
+        margin-bottom: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .chat-message.sent {
+        align-items: flex-end;
+        text-align: right;
+    }
+    .chat-message.received {
+        align-items: flex-start;
+        text-align: left;
+    }
+    .message-sender-name {
+        font-size: 0.85rem;
+        font-weight: bold;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+    .chat-message.sent .message-sender-name {
+        text-align: right;
+    }
+    .chat-message p {
+        margin: 0;
+        padding: 5px 10px;
+        border-radius: 5px;
+        max-width: 75%;
+        word-wrap: break-word;
+    }
+    .chat-message.sent p {
+        background-color: #d1e7dd;
+        color: #000;
+    }
+    .chat-message.received p {
+        background-color: #f8d7da;
+        color: #000;
+    }
+    .chat-message span {
+        font-size: 0.75rem;
+        color: #999;
+        margin-top: 2px;
+    }
+</style>
+</body>   
+    
+</body>
+</html>

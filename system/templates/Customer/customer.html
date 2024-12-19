@@ -1,0 +1,344 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard UI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'customers.css' %}">
+   
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar bg-white border-end p-3">
+            <div class="logo mb-4 fs-4 fw-bold">MedBay</div>
+            <nav>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'customer' user.id %}" class="d-flex align-items-center mb-3 text-dark active"><i class="fas fa-user me-2"></i> Profile</a></li>
+                    <li><a href="{% url 'customer_appointment' user.id %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-calendar-check me-2"></i> Appointment</a></li>
+					<li><a href="{% url 'customer_therapy' user.id %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-heart me-2"></i> Therapy Sessions</a></li>
+					<li><a href="{% url 'enrollment' user.id %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-edit me-2"></i> Enrollment</a></li>
+					<li><a href="{% url 'customer_class' user.id %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-graduation-cap me-2"></i> Classes</a></li>
+					<li><a href="{% url 'team_list' %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-users me-2"></i> Team</a></li>
+                </ul>
+            </nav>
+            <div class="profile text-center mt-auto">
+                <img src="{% if user.profile_picture %} {{ user.profile_picture.url }} {% else %} {% static 'images/default-profile.png' %} {% endif %}" class="rounded-circle mb-2" alt="Profile Picture">
+                <p class="mb-0 fw-bold">{{ user.first_name|capfirst }} {{ user.last_name|capfirst }}</p>
+                <span class="text-muted">{{ user.educator.subject }}</span>
+                <a href="{% url 'logout' %}" class="d-block mt-2 text-danger"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+            </div>
+        </div>
+    </div>
+        
+        <!-- Main Content -->
+        <div class="main-content flex-grow-1 p-4">
+            <header class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h4">User Profile</h1>
+                </div>
+                <div class="header-profile d-flex align-items-center">
+                    <img src="{% if user.profile_picture %} {{ user.profile_picture.url }} {% else %} {% static 'images/default-profile.png' %} {% endif %}" class="rounded-circle me-2" alt="Profile">
+                    <span>{{ user.username|capfirst }}</span>
+                </div>
+            </header>
+
+            <section>
+                <div class="container rounded bg-white mt-1 mb-5">
+                    <form action="" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row justify-content-center">
+                            <!-- Profile Settings Form -->
+                            <div class="col-md-6">
+                                <div class="card shadow-sm p-4">
+                                    <h4 class="mb-4">Profile Settings</h4>
+                                    <div class="mb-3">
+                                        <label class="form-label">First Name</label>
+                                        <input type="text" class="form-control" value="{{ user.first_name }}" name="first_name">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" value="{{ user.last_name }}" name="last_name">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" value="{{ user.email }}" name="email">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload Profile Picture</label>
+                                        <input type="file" class="form-control" name="profile_picture">
+                                        <div class="form-text">Allowed JPG, GIF, or PNG. Max size: 800K</div>
+                                    </div>
+                                </div>
+                            </div>
+            
+                            <!-- Additional Details -->
+                            <div class="col-md-6">
+                                <div class="card shadow-sm p-4">
+                                    <h5 class="mb-4">Additional Details</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Address</label>
+                                        <input type="text" class="form-control" placeholder="Enter your address" value="{{ user.address }}" name="address">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Contact Number</label>
+                                        <input type="text" class="form-control" value="{{ user.contact_info }}" name="contact_info" placeholder="Enter your Contact Number">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Birthday</label>
+                                        <input type="date" class="form-control" 
+                                               value="{{ user.birthdate|date:'Y-m-d' }}" 
+                                               name="birthdate">
+                                    </div>
+                                </div>
+                            </div>
+            
+                            <!-- Password Update -->
+                            <div class="col-md-12">
+                                <div class="card shadow-sm p-4">
+                                    <h5 class="mb-4">Change Password</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Current Password</label>
+                                        <input type="password" class="form-control" name="current_password" placeholder="Enter current password">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">New Password</label>
+                                        <input type="password" class="form-control" name="new_password1" placeholder="Enter new password">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Confirm New Password</label>
+                                        <input type="password" class="form-control" name="new_password2" placeholder="Confirm new password">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Submit Button -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary" aria-label="Send Message">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <!-- Chatbox -->
+        <div id="chatbox" class="chatbox-container">
+            <div class="chatbox-header" data-admin-id="{{ admin_id }}">Chat Support</div>
+            <div class="chatbox-body">
+                <!-- Messages will be dynamically appended here -->
+            </div>
+            <div class="chatbox-footer">
+                <form id="chat-form" class="d-flex">
+                    {% csrf_token %}
+                    <input type="text" id="chat-message" class="form-control me-2" placeholder="Type a message">
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatboxHeader = document.querySelector('.chatbox-header');
+            const chatbox = document.getElementById('chatbox');
+            const chatForm = document.getElementById('chat-form');
+            const messageInput = document.getElementById('chat-message');
+            const chatboxBody = document.querySelector('.chatbox-body');
+            const sendButton = chatForm.querySelector('button');
+            const adminId = chatboxHeader.dataset.adminId;
+
+            if (!adminId) {
+                console.error('Admin ID is missing from chatbox header.');
+                return;
+            }
+
+            let lastMessageId = null; // Tracks the latest message ID for incremental fetching
+            const displayedMessageIds = new Set(); // Keep track of displayed message IDs
+
+            // Enable/Disable the send button based on input
+            messageInput.addEventListener('input', () => {
+                sendButton.disabled = messageInput.value.trim() === '';
+            });
+
+            // Function to fetch chat messages
+            const fetchMessages = () => {
+                const url = `/chat/messages/${adminId}/?last_message_id=${lastMessageId || ''}`;
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.messages) {
+                            data.messages.forEach(message => {
+                                if (!displayedMessageIds.has(message.id)) {
+                                    appendMessage(message, message.sender_is_client ? 'sent' : 'received');
+                                    displayedMessageIds.add(message.id);
+                                    lastMessageId = message.id;
+                                }
+                            });
+                            chatboxBody.scrollTop = chatboxBody.scrollHeight;
+                        }
+                    })
+                    .catch(error => console.error('Error fetching messages:', error));
+            };
+
+            // Function to append a message
+            const appendMessage = (message, type) => {
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('chat-message', type);
+
+    // Display the sender's name
+    const senderName = document.createElement('div');
+    senderName.classList.add('message-sender-name');
+    senderName.textContent = message.sender_username || "Friendly Stranger"; // Fallback if username is missing
+
+    // Display the message content
+    const messageContent = document.createElement('p');
+    messageContent.textContent = message.message;
+
+    // Display the timestamp
+    const messageTimestamp = document.createElement('span');
+    messageTimestamp.textContent = message.timestamp;
+
+    // Append elements to the message container
+    messageElement.appendChild(senderName);
+    messageElement.appendChild(messageContent);
+    messageElement.appendChild(messageTimestamp);
+
+    // Append the message container to the chatbox
+    chatboxBody.appendChild(messageElement);
+};
+
+            // Toggle chatbox visibility and fetch messages
+            chatboxHeader.addEventListener('click', () => {
+                chatbox.classList.toggle('chatbox-open');
+                if (chatbox.classList.contains('chatbox-open')) {
+                    fetchMessages();
+                }
+            });
+
+            // Periodic message fetching when chatbox is open
+            setInterval(() => {
+                if (chatbox.classList.contains('chatbox-open')) {
+                    fetchMessages();
+                }
+            }, 2000);
+
+            // Send message via form submission
+            chatForm.onsubmit = (e) => {
+                e.preventDefault();
+                const message = messageInput.value.trim();
+                if (!message) return;
+
+                fetch('/chat/send/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                    body: JSON.stringify({ receiver_id: adminId, message: message }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (!displayedMessageIds.has(data.message.id)) {
+                                appendMessage(data.message, 'sent');
+                                displayedMessageIds.add(data.message.id);
+                                lastMessageId = data.message.id;
+                            }
+                            messageInput.value = '';
+                            sendButton.disabled = true;
+                            chatboxBody.scrollTop = chatboxBody.scrollHeight;
+                        }
+                    })
+                    .catch(error => console.error('Error sending message:', error));
+            };
+        });
+    </script>
+
+<style>
+    .chatbox-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 500px;
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        z-index: 1000;
+    }
+    .chatbox-header {
+        background-color: #007bff;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .chatbox-body {
+        display: none;
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 10px;
+        background-color: #f9f9f9;
+        max-height: 300px;
+        border-bottom: 1px solid #ddd;
+    }
+    .chatbox-footer {
+        display: none;
+        padding: 10px;
+        border-top: 1px solid #ddd;
+        background-color: #f1f1f1;
+    }
+    .chat-message {
+        margin-bottom: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .chat-message.sent {
+        align-items: flex-end;
+        text-align: right;
+    }
+    .chat-message.received {
+        align-items: flex-start;
+        text-align: left;
+    }
+    .message-sender-name {
+        font-size: 0.85rem;
+        font-weight: bold;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+    .chat-message.sent .message-sender-name {
+        text-align: right;
+    }
+    .chat-message p {
+        margin: 0;
+        padding: 5px 10px;
+        border-radius: 5px;
+        max-width: 75%;
+        word-wrap: break-word;
+    }
+    .chat-message.sent p {
+        background-color: #d1e7dd;
+        color: #000;
+    }
+    .chat-message.received p {
+        background-color: #f8d7da;
+        color: #000;
+    }
+    .chat-message span {
+        font-size: 0.75rem;
+        color: #999;
+        margin-top: 2px;
+    }
+</style>
+    
+</body>
+</html>

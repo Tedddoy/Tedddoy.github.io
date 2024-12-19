@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Login</title>
+  <!-- Include Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f8f9fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      text-align: center;
+    }
+    .login-card h2 {
+      margin-bottom: 20px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .login-card .form-group label {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .login-card .form-control {
+      height: 45px;
+      border-radius: 5px;
+    }
+    .login-card .btn {
+      background-color: #007bff;
+      color: #fff;
+      height: 45px;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .login-card .btn:hover {
+      background-color: #0056b3;
+    }
+    .login-card .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    .login-card .footer a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    .login-card .footer a:hover {
+      text-decoration: underline;
+    }
+    .login-card .back-home {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #6c757d;
+    }
+    .login-card .back-home a {
+      color: #007bff;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .login-card .back-home a:hover {
+      text-decoration: underline;
+    }
+
+    /* Logo Styling with Poppins */
+    .logo {
+      font-family: 'Poppins', sans-serif; /* Use Poppins font */
+      font-size: 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      bottom: 750px;
+      position: absolute;
+    }
+
+    .logo-med {
+      color: white;
+      background-color: #00FF00; /* Vibrant green */
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+
+    .logo-bay {
+      color: #002060; /* Dark blue */
+      margin-left: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <span class="logo-med">Med</span><span class="logo-bay">Bay</span>
+  </div>
+  <div class="login-card">
+    <h2>Login</h2>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="username">Username</label>
+        {{ form.username }}
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        {{ form.password }}
+      </div>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <input type="checkbox" id="remember" name="remember">
+          <label for="remember">Remember me</label>
+        </div>
+        <a href="#" class="forgot-pass">Forgot Password?</a>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Log In</button>
+    </form>
+    <div class="footer">
+      <p>Don't have an account? <a href="{% url 'signup' %}">Register here</a></p>
+    </div>
+    <div class="back-home">
+      <a href="{% url 'index' %}">← Back to Home</a>
+    </div>
+  </div>
+</body>
+</html>

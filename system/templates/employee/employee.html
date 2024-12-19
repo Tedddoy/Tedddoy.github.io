@@ -1,0 +1,243 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="{% static 'admin_services.css' %}">
+
+    <title>AdminHub</title>
+</head>
+<body>
+    <section id="sidebar">
+        <a href="#" class="brand">
+            <i class='bx bxs-smile'></i>
+            <span class="text">AdminHub</span>
+        </a>
+        <ul class="side-menu top">
+            <li>
+                <a href="">
+                    <i class='bx bxs-dashboard' ></i>
+                    <span class="text">Pending</span>
+                </a>
+            </li>
+            <li>
+                <a href="">
+                    <i class='bx bxs-briefcase' ></i>
+                    <span class="text">Payment List</span>
+                </a>
+            </li>
+        </ul>
+        <ul class="side-menu">
+            <li>
+                <a href="#">
+                    <i class='bx bxs-cog' ></i>
+                    <span class="text">Settings</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="logout">
+                    <i class='bx bxs-log-out' ></i>
+                    <span class="text" onclick="logout()">Logout</span>
+                </a>
+            </li>
+        </ul>
+    </section>
+    <section id="content">
+        <nav>
+            <i class='bx bx-menu' ></i>
+            <a href="#" class="nav-link">Categories</a>
+            <input type="checkbox" id="switch-mode" hidden>
+            <label for="switch-mode" class="switch-mode"></label>
+            <a href="#" class="notification">
+                <i class='bx bxs-bell' ></i>
+                <span class="num">8</span>
+            </a>
+            <a href="#" class="profile">
+                <img src="img/people.png">
+            </a>
+        </nav>
+        <main>
+            <div class="head-title">
+                <div class="left">
+                    <h1>Payments</h1>
+                    <ul class="breadcrumb">
+                        <li>
+                            <a href="#">Payments</a>
+                        </li>
+                        <li><i class='bx bx-chevron-right' ></i></li>
+                        <li>
+                            <a class="active" href="#">Home</a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- <a href="#" class="btn-download">
+                    <i class='bx bxs-cloud-download' ></i>
+                    <span class="text">Download PDF</span>
+                </a> -->
+            </div>
+            <div class="table-data">
+                <div class="order">
+                    <div class="head">
+                        <h3> Manage Enrollments</h3>
+                        <div class="input-box">
+                            <input type="text" name="q" id="search-input" placeholder="Search here..." autocomplete="off" />
+                        </div>
+                        
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Educator</th>
+                                <th>Service</th>
+                                <th>Amount</th>
+                                <th>Reference Number</th>
+                                <th>Receipt</th>
+                                <th>Confirmation Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payments %}
+                            <tr>
+                                <td>{{ payment.enrollment.client.username }}</td>
+                                <td>{{ payment.enrollment.educator.user.username }}</td>
+                                <td>{{ payment.enrollment.schedule.service.name }}</td>
+                                <td>{{ payment.amount }} Php</td>
+                                <td>{{ payment.reference_number }}</td>
+                                <td>
+                                    {% if payment.receipt %}
+                                    <a href="{{ payment.receipt.url }}" target="_blank">View Receipt</a>
+                                    {% else %}
+                                    No Receipt
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="
+                                        {% if payment.confirmation_status == 'Confirmed' %}status-confirmed
+                                        {% elif payment.confirmation_status == 'Rejected' %}status-rejected
+                                        {% else %}status-pending
+                                        {% endif %}
+                                    ">
+                                        {{ payment.confirmation_status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <form method="POST">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="payment_id" value="{{ payment.id }}">
+                                        <select name="confirmation_status" required>
+                                            <option value="Pending" {% if payment.confirmation_status == "Pending" %}selected{% endif %}>Pending</option>
+                                            <option value="Confirmed" {% if payment.confirmation_status == "Confirmed" %}selected{% endif %}>Confirmed</option>
+                                            <option value="Rejected" {% if payment.confirmation_status == "Rejected" %}selected{% endif %}>Rejected</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-primary">Update</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8">No payments found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </section>
+
+    <script>
+        
+        const allSideMenu = document.querySelectorAll('#sidebar .side-menu.top li a');
+        allSideMenu.forEach(item=> {
+            const li = item.parentElement;
+
+            item.addEventListener('click', function () {
+                allSideMenu.forEach(i=> {
+                    i.parentElement.classList.remove('active');
+                })
+                li.classList.add('active');
+            })
+        });
+
+        // TOGGLE SIDEBAR
+        const menuBar = document.querySelector('#content nav .bx.bx-menu');
+        const sidebar = document.getElementById('sidebar');
+
+        menuBar.addEventListener('click', function () {
+            sidebar.classList.toggle('hide');
+        })
+
+        const switchMode = document.getElementById('switch-mode');
+
+        switchMode.addEventListener('change', function () {
+            if(this.checked) {
+                document.body.classList.add('dark');
+            } else {
+                document.body.classList.remove('dark');
+            }
+        })
+
+        // search
+        const searchInput = document.getElementById('search-input');
+        const serviceTable = document.querySelector('.table-data table');
+        const originalRows = Array.from(serviceTable.querySelectorAll('tbody tr'));
+
+        searchInput.addEventListener('input', () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        const filteredRows = originalRows.filter(row => {
+            const educatorCell = row.querySelector('td:first-child'); 
+            const educator = educatorCell.textContent.toLowerCase();
+            const classCell = row.querySelector('td:nth-child(2)');
+            const className = classCell.textContent.toLowerCase();
+            return educator.includes(searchTerm) || className.includes(searchTerm);
+        });
+        serviceTable.querySelector('tbody').innerHTML = ''; 
+        filteredRows.forEach(row => serviceTable.querySelector('tbody').appendChild(row));
+        });
+
+        function logout() {
+            window.location.href = "{% url 'index' %}";
+        }
+
+    </script>
+    
+
+    <style>
+        .status-confirmed {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-rejected {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .status-pending {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        a img {
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease-in-out;
+        cursor: pointer;
+    }
+
+    a img:hover {
+        transform: scale(1.1);
+        box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Add styles for missing receipt text */
+    span {
+        font-size: 14px;
+        color: #888;
+    }
+    </style>
+</body>
+</html>

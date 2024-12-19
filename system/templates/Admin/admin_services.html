@@ -1,0 +1,304 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Services</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<style>
+    body{
+        overflow-y: hidden;
+    }
+</style>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        {% include 'Admin/admin_sidebar.html' %}
+    </div>
+        
+        <!-- Main Content -->
+        <div class="main-content flex-grow-1 p-4">
+            <header class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h4">Services</h1>
+                </div>
+                <div class="header-profile d-flex align-items-center">
+                    <span>Admin Panel</span>
+                </div>
+            </header>
+            
+            <!-- Overview Cards -->
+            <section class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary p-3">
+                        <p>Total Services</p>
+                        <h2>{{ total_service }}</h2>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info p-3">
+                        <p>Available Services</p>
+                        <h2>{{ total_availability }}</h2>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success p-3">
+                        <p>Total Therapy</p>
+                        <h2>{{ total_therapy }}</h2>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success p-3">
+                        <p>Total Classes</p>
+                        <h2>{{ total_class }}</h2>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Data Table -->
+            <section class="row g-3">
+                <div class="col-md-8">
+                    <div class="table-card p-4 shadow-sm rounded">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="m-0">All Services</h3>
+                            <div class="input-group w-50">
+                                <input type="text" id="search-input" class="form-control" placeholder="Search for services" aria-label="Search for services">
+                                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <button class="btn btn-success ms-2" type="button" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                                    Add Category
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container" style="overflow-y: auto; max-height: 300px;">
+                            <table class="table" id="recentBookingsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Price</th>
+                                        <th>Availability</th>
+                                        <th>Category</th>
+                                        
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for service in services %}
+                                    <tr>
+                                        <td>{{ service.name }}</td>
+                                        <td>&#8369;{{ service.price }}</td>
+                                        <td>{{ service.availability_text }}</td>
+                                        <td>{{ service.category_id.category }}</td>
+                                        
+                                        <td class="text-center">
+                                            <a href="{% url 'delete_service' service.id %}" class="text-danger mx-2" onclick="return confirm('Are you sure?');">
+                                                <i class="fas fa-trash" title="Delete"></i>
+                                            </a>
+                                            <a href="#" class="text-primary mx-2" onclick="openEditServiceModal('{{ service.id }}', '{{ service.name }}', '{{ service.description }}', '{{ service.price }}', '{{ service.availability }}', '{{ service.category_id.id }}')">
+                                                <i class="fas fa-edit" title="Edit"></i>
+                                            </a>
+                                            
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Add Service Modal -->
+    <div class="modal fade" id="addServiceModal" tabindex="-1" aria-labelledby="addServiceModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'add_service' %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addServiceModalLabel">Add New Service</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="serviceName" class="form-label">Service Name</label>
+                            <input type="text" class="form-control" id="serviceName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="serviceDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="serviceDescription" name="description" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="servicePrice" class="form-label">Price</label>
+                            <input type="number" class="form-control" id="servicePrice" name="price" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="serviceCategory" class="form-label">Category</label>
+                            <select class="form-select" id="serviceCategory" name="category_id" required>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="availability" class="form-label">Availability</label>
+                            <select class="form-select" id="availability" name="availability" required>
+                                <option value="True">Yes</option>
+                                <option value="False">No</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save Service</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Service Modal -->
+    <div class="modal fade" id="editServiceModal" tabindex="-1" aria-labelledby="editServiceModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="editServiceForm" method="POST" action="{% url 'update_service' 0 %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="service_id" id="editServiceId">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editServiceModalLabel">Edit Service</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="editServiceName" class="form-label">Service Name</label>
+                            <input type="text" class="form-control" id="editServiceName" name="name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editServicePrice" class="form-label">Price</label>
+                            <input type="number" class="form-control" id="editServicePrice" name="price">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editServiceDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editServiceDescription" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editServiceAvailability" class="form-label">Availability</label>
+                            <select class="form-select" id="editServiceAvailability" name="availability">
+                                <option value="True">Yes</option>
+                                <option value="False">No</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editServiceCategory" class="form-label">Category</label>
+                            <select class="form-select" id="editServiceCategory" name="category_id">
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'add_category' %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="categoryName" class="form-label">Category Name</label>
+                            <input type="text" class="form-control" id="categoryName" name="category" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Category</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+    function openAddServiceModal() {
+        const addServiceModal = new bootstrap.Modal(document.getElementById('addServiceModal'));
+        addServiceModal.show();
+    }
+    
+    // Open Edit Service Modal
+    function openEditServiceModal(id, name, description, price, availability, categoryId) {
+    const editServiceModal = new bootstrap.Modal(document.getElementById('editServiceModal'));
+
+        // Populate modal fields
+        document.getElementById('editServiceId').value = id || '';
+        document.getElementById('editServiceName').value = name || '';
+        document.getElementById('editServiceDescription').value = description || '';
+        document.getElementById('editServicePrice').value = parseFloat(price) || ''; // Ensure it's a valid number
+        document.getElementById('editServiceAvailability').value = availability || '';
+        document.getElementById('editServiceCategory').value = categoryId || '';
+
+        // Update the form action dynamically with the service ID
+        const form = document.getElementById('editServiceForm');
+        form.action = `/update_service/${id}/`;
+
+        // Show modal
+        editServiceModal.show();
+    }    
+    
+    // Open Assign Therapist Modal
+    function openAssignTherapistModal(serviceId, serviceName) {
+        const assignTherapistModal = new bootstrap.Modal(document.getElementById('assignTherapistModal'));
+        document.getElementById('assignServiceId').value = serviceId;
+        document.getElementById('assignServiceName').textContent = serviceName;
+
+        assignTherapistModal.show();
+    }
+    
+    // Search Filter Functionality
+    document.getElementById('search-input').addEventListener('input', function () {
+        const filter = this.value.toLowerCase().trim(); // Get the search input
+        const rows = document.querySelectorAll('#recentBookingsTable tbody tr'); // Target all table rows
+
+        rows.forEach(row => {
+            const cells = Array.from(row.children); // Get all cells in the row
+            const match = cells.some(cell =>
+                cell.textContent.toLowerCase().includes(filter) // Check if any cell contains the search term
+            );
+            row.style.display = match ? '' : 'none'; // Show or hide rows based on the match
+        });
+    });
+
+    // Open Assign Therapist Modal
+    function openAssignTherapistModal(serviceId, serviceName) {
+        // Set service data in the modal
+        document.getElementById("assignServiceId").value = serviceId;
+        document.getElementById("serviceName").textContent = serviceName;
+
+        // Show the modal using Bootstrap's modal API
+        const assignTherapistModal = new bootstrap.Modal(document.getElementById("assignTherapistModal"));
+        assignTherapistModal.show();
+    }
+    </script>
+    
+</body>
+</html>

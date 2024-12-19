@@ -1,0 +1,200 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Services</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'admin_enrollment.css' %}">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        {% include 'Admin/admin_sidebar.html' %}
+    </div>
+        
+        <!-- Main Content -->
+        <div class="main-content flex-grow-1 p-4">
+            <header class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h4">Appointments</h1>
+                </div>
+            </header>
+                     
+            <!-- Data Table -->
+            <section class="row g-3">
+                <div class="col-md-8">
+                    <div class="table-card p-4 shadow-sm rounded">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="m-0">All Appointments</h3>
+                            <div class="input-group w-50">
+                                <input type="text" id="search-input" class="form-control" placeholder="Search for services" aria-label="Search for services">
+                            </div>
+                        </div>
+                        <div class="table-container" style="overflow-y: auto; max-height: 420px;">
+                            <table class="table" id="recentBookingsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Client</th>
+                                        <th>Name</th>
+                                        <th>Service</th>
+                                        <th>Assigned Therapist</th>
+                                        <th> Date</th>
+                                        <th> Time</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Update</th>
+                                        <th>Remove</th>
+                                        <th>Assign Therapist</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in appointments %}
+                                        <tr>
+                                            <td>{{ appointment.user.username }}</td>
+                                            <td>{{ appointment.user.first_name }} {{ appointment.user.last_name }}</td>
+                                            <td>{{ appointment.service.name }}</td>
+                                            <td>
+                                                {% if appointment.therapist %}
+                                                    
+                                                    {{ appointment.therapist.first_name }} {{ appointment.therapist.last_name }}
+                                                {% else %}
+                                                    <em>No Therapist Assigned</em>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ appointment.appointment_date }}</td>
+                                            <td>{{ appointment.appointment_time }}</td>
+                                            <td>{{ appointment.appointment_type }}</td>
+                                            <td>
+                                                <span class="badge
+                                                    {% if appointment.status == 'Pending' %}bg-warning text-dark
+                                                    {% elif appointment.status == 'Confirmed' %}bg-success
+                                                    {% elif appointment.status == 'Declined' %}bg-danger
+                                                    {% endif %}
+                                                ">
+                                                    {{ appointment.status }}
+                                                </span>
+                                            </td>
+                                        
+                                            <td class="text-center">
+                                                <!-- Status Update Form -->
+                                                <form method="post" action="{% url 'update_appointment_status' appointment.id %}" style="display: flex; align-items: center; gap: 10px;">
+                                                    {% csrf_token %}
+                                                    <div class="status-dropdown">
+                                                        <select name="status" class="form-select form-select-sm">
+                                                            <option value="Pending" {% if appointment.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                                            <option value="Confirmed" {% if appointment.status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+                                                            <option value="Cancelled" {% if appointment.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                                        </select>
+                                                    </div>
+                                                    <input type="hidden" name="enrollment_id" value="{{ enrollment.id }}">
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Update Status">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                            <td>
+                                                <!-- Delete Form -->
+                                                <form method="post" action="{% url 'delete_appointment' appointment.id %}" style="display:inline; margin-left: 5px;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this appointment?');" title="Delete Enrollment">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                            <td class="text-center">
+                                                {% if appointment.status != 'Cancelled' %}
+                                                    <!-- Assign Therapist Button -->
+                                                    <button class="btn btn-sm btn-primary" onclick="openAssignTherapistModal('{{ appointment.id }}', '{{ appointment.service.name }}')">
+                                                        <i class="fas fa-handshake"></i> 
+                                                    </button>
+                                                {% else %}
+                                                    <span>N/A</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="7">No enrollments available.</td>
+                                        </tr>  
+                                        {% endfor %}    
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Assign Therapist Modal -->
+<div class="modal fade" id="assignTherapistModal" tabindex="-1" aria-labelledby="assignTherapistModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="assignTherapistForm" method="POST" action="{% url 'assign_therapist_to_appointment' %}">
+                {% csrf_token %}
+                <input type="hidden" name="appointment_id" id="assignAppointmentId">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assignTherapistModalLabel">Assign Therapist to <span id="appointmentServiceName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="therapistSelect" class="form-label">Select Therapist:</label>
+                        <select class="form-select" id="therapistSelect" name="therapist_id" required>
+                            <option value="" hidden>Select Therapist</option> <!-- Correct placeholder -->
+                            {% for therapist in therapists %}
+                                <option value="{{ therapist.id }}">{{ therapist.first_name }} {{ therapist.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Assign Therapist</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    document.getElementById('search-input').addEventListener('input', function () {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#recentBookingsTable tbody tr');
+
+        rows.forEach(row => {
+            const client = row.children[0]?.textContent.toLowerCase(); // Client column
+            const educator = row.children[1]?.textContent.toLowerCase(); // Educator column
+            const service = row.children[2]?.textContent.toLowerCase(); // Service column
+
+            const isMatch = client.includes(filter) || educator.includes(filter) || service.includes(filter);
+            row.style.display = isMatch ? '' : 'none';
+        });
+    });
+    </script>   
+
+
+<script>
+    function openAssignTherapistModal(appointmentId, serviceName) {
+        // Populate modal fields
+        document.getElementById('assignAppointmentId').value = appointmentId;
+        document.getElementById('appointmentServiceName').textContent = serviceName;
+    
+        // Show the modal using Bootstrap
+        const assignTherapistModal = new bootstrap.Modal(document.getElementById('assignTherapistModal'));
+        assignTherapistModal.show();
+    }
+    </script>
+    
+</body>
+</html>

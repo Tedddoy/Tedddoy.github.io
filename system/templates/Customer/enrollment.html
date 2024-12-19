@@ -1,0 +1,512 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard UI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css">
+    <link rel="stylesheet" href="{% static 'customer_enrollment.css' %}">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar bg-white border-end p-3">
+            <div class="logo mb-4 fs-4 fw-bold">MedBay</div>
+            <nav>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'customer' user.id %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-user me-2"></i> Profile</a></li>
+                    <li><a href="{% url 'customer_appointment' user.id %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-calendar-check me-2"></i> Appointment</a></li>
+                    <li><a href="{% url 'customer_therapy' user.id %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-heart me-2"></i> Therapy Sessions</a></li>
+                    <li><a href="{% url 'enrollment' user.id %}" class="d-flex align-items-center mb-3 text-dark active"><i class="fas fa-edit me-2"></i> Enrollment</a></li>
+                    <li><a href="{% url 'customer_class' user.id %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-graduation-cap me-2"></i> Classes</a></li>
+                    <li><a href="{% url 'team_list' %}" class="d-flex align-items-center mb-3 text-dark"><i class="fas fa-users me-2"></i> Team</a></li>
+                </ul>
+            </nav>
+            <div class="profile text-center mt-auto">
+                <img src="{% if user.profile_picture %} {{ user.profile_picture.url }} {% else %} {% static 'images/default-profile.png' %} {% endif %}" class="rounded-circle mb-2" alt="Profile Picture">
+                <p class="mb-0 fw-bold">{{ user.first_name|capfirst }} {{ user.last_name|capfirst }}</p>
+                <span class="text-muted">{{ user.educator.subject }}</span>
+                <a href="{% url 'logout' %}" class="d-block mt-2 text-danger"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+            </div>
+        </div>
+    </div>
+
+        
+        <!-- Main Content -->
+        <div class="main-content flex-grow-1 p-4">
+            <header class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h4">Enrollment</h1>
+                    
+                </div>
+                <div class="header-profile d-flex align-items-center">
+                    <img src="{% if user.profile_picture %} {{ user.profile_picture.url }} {% else %} {% static 'images/default-profile.png' %} {% endif %}" class="rounded-circle me-2" alt="Profile">
+                    <span>{{ user.username|capfirst }}</span>
+                </div>
+            </header>
+
+            <section>
+                <div class="table-data">
+                    <div class="enrolled-classes-section">
+                        <div class="card-grid">
+                            {% if enrolled_classes %}
+                                {% for enrolled_class in enrolled_classes %}
+                                    {% if enrolled_class.status == "Pending" %}
+                                    <div class="card mb-4 shadow-lg">
+                                        <div class="card-header bg-primary text-white text-center">
+                                            <h4 class="mb-0">Assessment Form</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <!-- Notification Section -->
+                                            <div class="alert alert-info d-flex align-items-center">
+                                                <div class="me-3">
+                                                    <i class="fas fa-info-circle fa-2x"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="mb-1">
+                                                        You enrolled in 
+                                                        <strong>{{ enrolled_class.schedule.service.name }} {{ enrolled_class.schedule.day }}: 
+                                                        {{ enrolled_class.schedule.time_start }} - {{ enrolled_class.schedule.time_end }}</strong>
+                                                    </p>
+                                                    <p class="mb-0">
+                                                        <strong>Status:</strong> 
+                                                        <span class="badge bg-warning text-dark">{{ enrolled_class.status }}</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                    
+                                            <!-- Enrollment Details -->
+                                            <h5 class="mb-4 text-primary">Enrollment Details</h5>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item">
+                                                    <strong>Client:</strong> 
+                                                    <span class="text-secondary">{{ enrolled_class.client.username }}</span>
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <strong>Full Name:</strong> 
+                                                    <span class="text-secondary">{{ enrolled_class.client.first_name }} {{ enrolled_class.client.last_name }}</span>
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <strong>Service:</strong> 
+                                                    <span class="text-secondary">{{ enrolled_class.schedule.service.name }}</span>
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <strong>Educator:</strong> 
+                                                    <span class="text-secondary">{{ enrolled_class.educator.user.username }}</span>
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <strong>Enrollment Date:</strong> 
+                                                    <span class="text-secondary">{{ enrolled_class.enrollment_date }}</span>
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <strong>Service Price:</strong> 
+                                                    <span class="text-success">{{ enrolled_class.schedule.service.price }} Php</span>
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <strong>Enrollment Duration:</strong> 
+                                                    <span class="text-secondary">
+                                                        {% if enrolled_class.assessment_set.first %}
+                                                            {{ enrolled_class.assessment_set.first.total_month }} month{{ enrolled_class.assessment_set.first.total_month|pluralize }}
+                                                        {% else %}
+                                                    </span>
+                                                </li>  
+                                            </ul>
+                                        </div>
+
+                                        <div class="card-footer text-center bg-light">
+                                            <button class="btn btn-success btn-sm">
+                                                View More Details
+                                            </button>
+                                            <button class="btn btn-secondary btn-sm">
+                                                Contact Educator
+                                            </button>
+                                        </div>
+                                    </div>
+                                        
+                                    <div class="enrollment-section">
+                                        <h2 class="section-title">Classes We Offer!</h2>
+                                        <div class="card-container">
+                                            {% for service_schedule in service_schedules %}
+                                                <div class="class-card">
+                                                    <h3 class="class-title">{{ service_schedule.service.name }}</h3>
+                                                    <p class="class-category"><strong>Category:</strong> {{ service_schedule.service.category_id.category }}</p>
+                                                    <p class="class-description"><strong>Description:</strong> {{ service_schedule.service.description }}</p>
+                                                    <div class="schedule-section">
+                                                        <h4>Schedule:</h4>
+                                                        {% if service_schedule.schedules %}
+                                                            <ul>
+                                                                {% for schedule in service_schedule.schedules %}
+                                                                    <li class="schedule-item">
+                                                                        <span>{{ schedule.day }}: {{ schedule.time_start }} - {{ schedule.time_end }}</span>
+                                                                        <span>(Educator: {{ schedule.educator.user.username }})</span>
+                                                                        {% if schedule.status == "Closed" %}
+                                                                            <span class="text-danger"> - This schedule is temporarily closed.</span>
+                                                                        {% else %}
+                                                                            <button class="enroll-btn" 
+                                                                                onclick="openEnrollmentForm(
+                                                                                    '{{ schedule.id }}', 
+                                                                                    '{{ schedule.educator.id }}', 
+                                                                                    '{{ service_schedule.service.id }}'
+                                                                                )">
+                                                                                Enroll Now
+                                                                            </button>
+                                                                        {% endif %}
+                                                                    </li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        {% else %}
+                                                            <p class="no-schedule">No schedule available for this service.</p>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% empty %}
+                                                <p class="no-classes">No class services available at the moment.</p>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    </div>
+                                    
+                                     {% if enrolled_class.payment_set.exists %}
+                                     {% with enrolled_class.payment_set.last as payment %}
+                                         {% if payment.payment_status == "Pending" %}
+                                         <div class="card bg-warning text-dark mb-3">
+                                             <div class="card-body">
+                                                 <h4 class="card-title">Payment Pending</h4>
+                                                 <p class="card-text">Your payment is currently under review. Please wait for confirmation.</p>
+                                                 <p><strong>Reference Number:</strong> {{ payment.reference_number }}</p>
+                                                 <p><strong>Amount:</strong> {{ payment.amount }} Php</p>
+                                             </div>
+                                         </div>
+                                         {% elif payment.payment_status == "Completed" %}
+                                         <div class="card bg-success text-white mb-3">
+                                             <div class="card-body">
+                                                 <h4 class="card-title">Payment Completed</h4>
+                                                 <p class="card-text">Your payment has been successfully processed.</p>
+                                             </div>
+                                         </div>
+                                         {% elif payment.payment_status == "Failed" %}
+                                         <div class="card bg-danger text-white mb-3">
+                                             <div class="card-body">
+                                                 <h4 class="card-title">Payment Failed</h4>
+                                                 <p class="card-text">There was an issue with your payment. Please try again.</p>
+                                             </div>
+                                         </div>
+                                         {% endif %}
+                                     {% endwith %}
+                                 {% else %}
+
+                                 <div class="card mb-3 shadow-lg">
+                                    <div class="card-header bg-dark text-white text-center">
+                                        <h2 class="card-title mb-0">Invoice</h2>
+                                    </div>
+                                   
+                                        <p class="card-text text-muted">
+                                            Below are the details of your enrollment:
+                                        </p>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item">
+                                                <strong>Service Name:</strong> 
+                                                <span class="text-secondary">{{ enrolled_class.schedule.service.name }}</span>
+                                            </li>
+                                            <li class="list-group-item">
+                                                <strong>Service Price (per month):</strong> 
+                                                <span class="text-success">{{ enrolled_class.schedule.service.price }} Php</span>
+                                            </li>
+                                            <li class="list-group-item">
+                                                <strong>Enrollment Duration:</strong> 
+                                                <span class="text-secondary">
+                                                    {% if enrolled_class.assessment_set.first %}
+                                                        {{ enrolled_class.assessment_set.first.total_month }} month{{ enrolled_class.assessment_set.first.total_month|pluralize }}
+                                                    {% else %}
+                                                        Not specified
+                                                    {% endif %}
+                                                </span>
+                                            </li>
+                                            <li class="list-group-item">
+                                                <strong>Total Price:</strong> 
+                                                <span class="text-success">
+                                                    {% if enrolled_class.total_price %}
+                                                        {{ enrolled_class.total_price }} Php
+                                                    {% else %}
+                                                        Not specified
+                                                    {% endif %}
+                                                </span>
+                                            </li>
+                                        </ul>
+                                        
+                                    <div class="card-header bg-primary text-white text-center">
+                                        <h2 class="card-title mb-0">Payment Options</h2>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text text-muted mb-4">
+                                            You can pay through our BDO account via Online Banking and GCash. Refer to the details below:
+                                        </p>
+                                        <div class="payment-details">
+                                            <p><i class="fas fa-university text-primary"></i> <strong>Bank Name:</strong> BANCO DE ORO (BDO)</p>
+                                            <p><i class="fas fa-credit-card text-success"></i> <strong>Account Number:</strong> 003120431707</p>
+                                            <p><i class="fas fa-user-circle text-info"></i> <strong>Account Name:</strong> Medbay Iligan Inc.</p>
+                                        </div>
+                                        <p><strong>Total Price:</strong>
+                                            {% if enrolled_class.total_price %}
+                                                {{ enrolled_class.total_price }} Php
+                                            {% else %}
+                                                Not specified
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="card-footer text-center bg-light">
+                                        {% if enrolled_class.id %}
+                                        <form method="POST" action="{% url 'cancel_enrollment' enrolled_class.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                    onclick="return confirm('Are you sure you want to cancel this enrollment?');">
+                                                Cancel Enrollment
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        <p class="text-muted">Enrollment ID is not available.</p>
+                                        {% endif %}
+                                    </div>
+                               
+                                
+                              
+                                
+                                    
+                                
+                                    </div>
+                                 <div class="card mb-3">
+                                     <div class="card-body">
+                                         
+                                         <h4>Payment Form</h4>
+                                         <form method="POST" enctype="multipart/form-data" action="{% url 'process_payment' %}">
+                                             {% csrf_token %}
+                                             <input type="hidden" name="enrollment_id" value="{{ enrolled_class.id }}">
+                                             <div class="mb-3">
+                                                 <label for="senderName-{{ enrolled_class.id }}" class="form-label">Sender's Name</label>
+                                                 <input type="text" class="form-control" id="senderName-{{ enrolled_class.id }}" name="sender_name" placeholder="Enter sender's name" required>
+                                             </div>
+                                             <div class="mb-3">
+                                                 <label for="paymentAmount-{{ enrolled_class.id }}" class="form-label">Payment Amount</label>
+                                                 <input type="number" class="form-control" id="paymentAmount-{{ enrolled_class.id }}" name="payment_amount" placeholder="Enter payment amount" required>
+                                             </div>
+                                             <div class="mb-3">
+                                                 <label for="referenceNumber-{{ enrolled_class.id }}" class="form-label">Reference Number</label>
+                                                 <input type="text" class="form-control" id="referenceNumber-{{ enrolled_class.id }}" name="reference_number" placeholder="Enter reference number" required>
+                                             </div>
+                                             <div class="mb-3">
+                                                 <label for="receiverName-{{ enrolled_class.id }}" class="form-label">Receiver's Name</label>
+                                                 <input type="text" class="form-control" id="receiverName-{{ enrolled_class.id }}" name="receiver_name" placeholder="Enter receiver's name" required>
+                                             </div>
+                                             <div class="mb-3">
+                                                 <label for="receiptUpload-{{ enrolled_class.id }}" class="form-label">Upload Receipt</label>
+                                                 <input type="file" class="form-control" id="receiptUpload-{{ enrolled_class.id }}" name="receipt" accept="image/*" required>
+                                             </div>
+                                             <button type="submit" class="btn btn-primary">Submit Payment</button>
+                                         </form>
+                                     </div>
+                                 </div>
+                                 {% endif %}
+                                     
+                                 {% elif enrolled_class.status == "Enrolled" %}
+                                 <div class="card shadow mb-4 ">
+                                    <div class="card-header bg-primary text-white">
+                                        <h4 class="mb-0 text-center">Assessment Form</h4>
+                                    </div>
+                                    <div class="card-body ">
+                                       
+                                        <div class="alert alert-info">
+                                            <p>
+                                                You are officially enrolled in 
+                                                <strong>{{ enrolled_class.schedule.service.name }} {{ enrolled_class.schedule.day }}: 
+                                                {{ enrolled_class.schedule.time_start }} - {{ enrolled_class.schedule.time_end }}</strong>
+                                            </p>
+                                            <p>
+                                                <strong>Status:</strong> 
+                                                <span class="badge bg-success">{{ enrolled_class.status }}</span>
+                                            </p>
+                                        </div>
+                                
+                                        <!-- Enrollment Details Section -->
+                                        <h5 class="text-primary mb-3">Enrollment Details</h5>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item"><strong>Client:</strong> {{ enrolled_class.client.username }}</li>
+                                            <li class="list-group-item"><strong>Full Name:</strong> {{ enrolled_class.client.first_name }} {{ enrolled_class.client.last_name }}</li>
+                                            <li class="list-group-item"><strong>Service:</strong> {{ enrolled_class.schedule.service.name }}</li>
+                                            <li class="list-group-item"><strong>Educator:</strong> {{ enrolled_class.educator.user.username }}</li>
+                                            <li class="list-group-item"><strong>Schedule:</strong> {{ enrolled_class.schedule.day }}: {{ enrolled_class.schedule.time_start }} - {{ enrolled_class.schedule.time_end }}</li>
+                                            <li class="list-group-item"><strong>Enrollment Date:</strong> {{ enrolled_class.enrollment_date }}</li>
+                                            <li class="list-group-item"><strong>Service Price:</strong> {{ enrolled_class.schedule.service.price }} Php</li>
+                                            <li class="list-group-item">
+                                                <strong>Enrollment Duration:</strong> 
+                                                {% if enrolled_class.assessment_set.first %}
+                                                    {{ enrolled_class.assessment_set.first.total_month }} month{{ enrolled_class.assessment_set.first.total_month|pluralize }}
+                                                {% else %}
+                                                    none
+                                                {% endif %}
+                                            </li>
+                                            <li class="list-group-item">
+                                                <strong>Monthly Sub Amount:</strong> 
+                                                {% if enrolled_class.assessment_set.first %}
+                                                    {{ enrolled_class.assessment_set.first.sub_amount }} Php
+                                                {% else %}
+                                                    Not specified
+                                                {% endif %}
+                                            </li>
+                                            <li class="list-group-item">
+                                                <strong>Total Price:</strong> 
+                                                {% if total_price %}
+                                                    {{ total_price }} Php
+                                                {% else %}
+                                                    Not specified
+                                                {% endif %}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="card shadow mb-4">
+                                    <div class="card-header bg-dark text-white text-center">
+                                        <h4 class="mb-0">Official Receipt</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="receipt-details">
+                                            <p><strong>Sender's Name:</strong> {{ enrolled_class.payment_set.first.sender_name }}</p>
+                                            <p><strong>Service Name:</strong> {{ enrolled_class.schedule.service.name }}</p>
+                                            <p><strong>Service Price:</strong> {{ enrolled_class.schedule.service.price }} Php</p>
+                                            <p><strong>Enrollment Duration:</strong> 
+                                                {% if enrolled_class.assessment_set.first %}
+                                                    {{ enrolled_class.assessment_set.first.total_month }} month{{ enrolled_class.assessment_set.first.total_month|pluralize }}
+                                                {% else %}
+                                                    none
+                                                {% endif %}
+                                            </p>
+                                            <p><strong>Total Price:</strong> 
+                                                {% if total_price %}
+                                                    {{ total_price }} Php
+                                                {% else %}
+                                                    Not specified
+                                                {% endif %}
+                                            </p>
+                                            <p><strong>Reference Number:</strong> 
+                                                {% if enrolled_class.payment_set.first %}
+                                                    {{ enrolled_class.payment_set.first.reference_number }}
+                                                {% else %}
+                                                    Not specified
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                 {% endif %}
+                                 {% endfor %}
+                                
+                            {% else %}
+                                <div class="enrollment-section">
+                                    <h2>Classes We Offer!</h2>
+                                    <div class="horizontal-card-container">
+                                        {% for service_schedule in service_schedules %}
+                                            <div class="class-card">
+                                                <h2 class="class-title">{{ service_schedule.service.name }}</h2>
+                                                <p><strong>Category:</strong> {{ service_schedule.service.category_id.category }}</p>
+                                                <p><strong>Description:</strong> {{ service_schedule.service.description }}</p>
+                                
+                                                <div class="schedule-section">
+                                                    <h3>Schedule:</h3>
+                                                    <ul>
+                                                        {% for schedule in service_schedule.schedules %}
+                                                            <li>
+                                                                <span>{{ schedule.day }}: {{ schedule.time_start }} - {{ schedule.time_end }}</span>
+                                                                <span>(Educator: {{ schedule.educator.user.username }})</span>
+                                                                <button class="enroll-btn" 
+                                                                    onclick="openEnrollmentForm(
+                                                                        '{{ schedule.id }}', 
+                                                                        '{{ schedule.educator.id }}', 
+                                                                        '{{ service_schedule.service.id }}',
+                                                                        '{{ service_schedule.service.name }}'
+                                                                    )">Enroll Now</button>
+                                                            </li>
+                                                        {% empty %}
+                                                            <li>No schedule available for this service.</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        {% empty %}
+                                            <p>No class services available at the moment.</p>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+        
+                    <!-- Modal for Enrollment Form -->
+                    <div id="enrollmentModal" class="modal">
+                        <div class="modal-content">
+                            <span class="close" onclick="closeEnrollmentForm()">&times;</span>
+                            <h2 class="modal-title">Enroll in Class</h2>
+                            <p id="className" class="text-center mb-3" style="font-weight: bold; font-size: 1.2rem; color: #007bff;"></p>
+                            <form id="enrollmentForm" method="POST" action="{% url 'enrollment' user_id=user_id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="schedule" id="scheduleId">
+                                <input type="hidden" name="educator" id="educatorId">
+                                <input type="hidden" name="service" id="serviceId">
+                    
+                                <!-- Enrollment Duration -->
+                                <div class="form-group">
+                                    <label for="total_months">Select Enrollment Duration:</label>
+                                    <select name="total_months" id="totalMonths" class="form-control" required>
+                                        <option value="" disabled selected>-- Select Duration --</option>
+                                        <option value="1">1 Month</option>
+                                        <option value="2">2 Months</option>
+                                        <option value="3">3 Months</option>
+                                        <option value="6">6 Months</option>
+                                        <option value="12">12 Months</option>
+                                    </select>
+                                </div>
+                    
+                                <!-- Submit and Cancel Buttons -->
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">Enroll</button>
+                                    <button type="button" class="btn btn-secondary" onclick="closeEnrollmentForm()">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+           
+            closeEnrollmentForm();
+            closePaymentModal();
+        });
+       
+        function openEnrollmentForm(scheduleId, educatorId, serviceId, className) {
+            
+            document.getElementById('scheduleId').value = scheduleId || '';
+            document.getElementById('educatorId').value = educatorId || '';
+            document.getElementById('serviceId').value = serviceId || '';
+            
+           
+            document.getElementById('className').innerText = className || 'Class Name Not Available';
+            
+           
+            document.getElementById('enrollmentModal').style.display = "flex";
+        }
+
+        function closeEnrollmentForm() {
+            document.getElementById('enrollmentModal').style.display = "none";
+        }
+        
+    </script>
+</body>
+</html>
